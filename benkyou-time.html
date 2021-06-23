@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <title>勉強時間測定ツール | wan-wan</title>
+        <meta charset="UTF-8">
+        <meta name="description" content="pochi1111が作成したツールです。ログインや会員登録しなくても
+        保存でき、使用することができます。">
+        <link rel="shortcut icon" href="favicon.ico">
+        <style>
+            @charset"UTF-8";
+        </style>
+    </head>
+    <body>
+        <div id="progress-time">
+            <h1><span id="hour">0</span>時間<span id="minute">0</span>分<span id="second">0</span>秒</h1>
+        </div>
+        <h2><span id="subject">教科</span>を勉強しました。</h2>
+        <div id="setting">
+                <select id="pull-down-menu">
+                    <option value="1">国語</option>
+                    <option value="2">算数</option>
+                    <option value="3">理科</option>
+                    <option value="4">社会</option>
+                </select>
+                <button id="start" onclick="start_click();">スタート</button>
+                <button id="stop" onclick="stop_click();">ストップ</button>
+                <button id="touroku" onclick="touroku_click();">登録</button>
+                <button id="torikesi" onclick="torikesi_click();">取り消し</button>
+        </div>
+        <div id="history">
+            <details>
+                <summary><h2>今日勉強した時間</h2></summary>
+                <h3>国語:<span id="day-japanese"></span><br /></h3>
+                <h3>算数:<span id="day-math"></span><br />
+                <h3>理科:<span id="day-science"></span><br /></h3>
+                <h3>社会:<span id="day-social-studies"></span><br /></h3>
+            </details>
+        </div>
+        <div id="week">
+            <details>
+                <summary><h2>いままで勉強した時間</h2></summary>
+                <h3>国語:<span id="week-japanese"></span><br /></h3>
+                <h3>算数:<span id="week-math"></span><br />
+                <h3>理科:<span id="week-science"></span><br /></h3>
+                <h3>社会:<span id="week-social-studies"></span><br /></h3>
+            </details>
+        </div>
+    </body>
+    <script>
+        //動力源のjavascript
+            let kyouka = document.getElementById('pull-down-menu');
+            let sub_time = document.getElementById('subject');
+            let touroku = document.getElementById('touroku');
+            let h = document.getElementById('hour');
+            let min = document.getElementById('minute');
+            let sec = document.getElementById('second');
+            let his_math = document.getElementById('day-math');
+            let his_japanese = document.getElementById('day-japanese');
+            let his_rika = document.getElementById('day-science');
+            let his_shakai = document.getElementById('day-social-studies');
+            let week_math = document.getElementById('week-math');
+            let week_japanese = document.getElementById('week-japanese');
+            let week_rika = document.getElementById('week-science');
+            let week_shakai = document.getElementById('week-social-studies');
+            //変数の指定
+            let kyouka_sitei;
+            let memo;
+            let memo2;
+            let tuduiteru = false;
+            let torikesi_suruka;
+            let time = 0;
+            let h_time = 0;
+            let min_time = 0;
+            let sec_time = 0;
+            let start_stop = false;
+            let hatu = true;
+            let date = new Date();
+            let day = String(date.getFullYear())+String(date.getMonth())+String(date.getDate());
+            //初めてかどうかを調べる
+            if (localStorage.getItem("hatu")===null){
+                hatu = false;
+                localStorage.setItem("hatu",true);
+                localStorage.setItem("hull_math",0);
+                localStorage.setItem("hull_japanese",0);
+                localStorage.setItem("hull_rika",0);
+                localStorage.setItem("hull_shakai",0);
+
+            }
+            //今日アクセスしたかを調べ、もしアクセスしていなかったらデータを作成または更新する
+            if (day != localStorage.getItem("day")){
+                localStorage.setItem("day",day);
+                localStorage.setItem("history_math",0);
+                localStorage.setItem("history_japanese",0);
+                localStorage.setItem("history_rika",0);
+                localStorage.setItem("history_shakai",0);
+            }
+            his_kousin();
+        //この後は即時実行プログラム
+        function touroku_click(){
+                if (start_stop == false){
+                tuduiteru = false;
+                start_stop = false;
+                switch (kyouka_sitei) {
+                    case "2":
+                        memo = time + Number(localStorage.getItem("history_math"));
+                        memo2 = time + Number(localStorage.getItem("hull_math"));
+                        localStorage.setItem("history_math",memo);
+                        localStorage.setItem("hull_math",memo2);
+                        break;
+                    case "1":
+                        memo = time + Number(localStorage.getItem("history_japanese"));
+                        memo2 = time + Number(localStorage.getItem("hull_japanese"));
+                        localStorage.setItem("history_japanese",memo);
+                        localStorage.setItem("hull_japanese",memo2);
+                        break;
+                    case "3":
+                        memo = time + Number(localStorage.getItem("history_rika"));
+                        memo2 = time + Number(localStorage.getItem("hull_rika"));
+                        localStorage.setItem("history_rika",memo);
+                        localStorage.setItem("hull_rika",memo2);
+                        break;
+                    case "4":
+                        memo = time + Number(localStorage.getItem("history_shakai"));
+                        memo2 = time + Number(localStorage.getItem("hull_shakai"));
+                        localStorage.setItem("history_shakai",memo);
+                        localStorage.setItem("hull_shakai",memo2);
+                        break;
+                
+                    default:
+                        console.error("エラーが発生しました。エラーコード：001");
+                        alert("エラーが発生しました。\n再読み込みを推奨します")
+                        break;
+                }
+                kyouka_sitei = "教科";
+                time = 0;
+                kousin();
+                his_kousin();
+            }else{
+                alert("ストップさせてからにして")
+            }
+        }
+        function torikesi_click(){
+            if(tuduiteru == true && start_stop == false){
+                    torikesi_suruka = confirm("本当に取り消しますか？");
+                if (torikesi_suruka == true){
+                    start_stop = false;
+                    tuduiteru = false;
+                    time = 0;
+                    kyouka_sitei = "教科";
+                    kousin();
+                    his_kousin();
+                }
+            }else{
+                alert("開始してない\n又はストップしてないよ")
+            }
+        }
+        function mainasu(){
+            time = 0;
+        }
+        function his_kousin(){
+            //his
+            his_math.innerHTML = localStorage.getItem("history_math")+"秒";
+            his_japanese.innerHTML =localStorage.getItem("history_japanese")+"秒";
+            his_rika.innerHTML=localStorage.getItem("history_rika")+"秒";
+            his_shakai.innerHTML=localStorage.getItem("history_shakai")+"秒";
+            //week
+            week_math.innerHTML=localStorage.getItem("hull_math")+"秒";
+            week_japanese.innerHTML=localStorage.getItem("hull_japanese")+"秒";
+            week_rika.innerHTML=localStorage.getItem("hull_rika")+"秒";
+            week_shakai.innerHTML=localStorage.getItem("hull_shakai")+"秒";
+        }
+        function start_click(){
+            if(start_stop == false){
+                //始めるときのプログラム
+                start_stop = true;
+                setTimeout(purasu,1000);
+            }
+            if(tuduiteru == false){
+                tuduiteru = true;
+                kyouka_sitei = kyouka.value;
+            }
+        }
+        function purasu(){
+            //時間を+していく
+            time += 1;
+            if(start_stop == true){
+                kousin();
+            }
+        }
+        function kousin(){
+            //画面の表示を更新する
+            h_time = Math.floor(time / 3600);
+            min_time = Math.floor((time % 3600) / 60);
+            sec_time = Math.floor(time % 60);
+            h.innerHTML = h_time;
+            min.innerHTML = min_time;
+            sec.innerHTML = sec_time;
+            switch (kyouka_sitei){
+                case "1":
+                    sub_time.innerHTML = "国語";
+                    break;
+                case "2":
+                    sub_time.innerHTML = "算数";
+                    break;
+                case "3":
+                    sub_time.innerHTML = "理科";
+                    break;
+                case "4":
+                    sub_time.innerHTML = "社会";
+                    break;
+                default:
+                    sub_time.innerHTML = "教科";
+            };
+            if(start_stop == true){
+                setTimeout(purasu,1000);
+            }
+        }
+        function stop_click(){
+            if(start_stop == true){
+                //一時停止のプログラム
+                start_stop = false;
+            }
+        }
+    </script>
+    <!--
+        --memo--
+        hisとweekは変数、historyとhullはストレージ
+        null秒と表示されるエラーを消す
+        *追加機能*
+        パソコンいじり禁止機能
+        始めてだったら操作方法説明機能
+    -->
+</html>
